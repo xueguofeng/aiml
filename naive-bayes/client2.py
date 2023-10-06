@@ -1,0 +1,4 @@
+import bayes
+
+
+bayes.testingNB()

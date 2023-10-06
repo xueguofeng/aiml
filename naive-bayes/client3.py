@@ -1,0 +1,3 @@
+import bayes
+
+bayes.spamTest()
