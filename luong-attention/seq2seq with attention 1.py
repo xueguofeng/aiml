@@ -175,10 +175,11 @@ class Decoder(tf.keras.Model):
         self.ws = tf.keras.layers.Dense(vocab_size)                  # Classifier
 
     def call(self, sequence, state, encoder_output):
-        # For each sample, the Luong-Attention decoder can only handle 1 word/decoder-input at one time.
-        # Because it needs to generate the final output of the input word based on:
-        # - the alignment score and context vector
-        # - the intermediate LSTM output.
+        # This function is used for both training and inference;
+        # so for each sample, it can only handle 1 word/decoder-input at one time.
+        # For the training, we can introduce the batch processing:
+        # - calculate all the LSTM-out for the decoder intput sequences
+        # - calculate all the Attention-out
         embed = self.embedding(sequence) # Input：S x 1, ID (0~109)
                                          # Output: S x 1 x 32, Word Vedtor
 
@@ -259,7 +260,7 @@ def train_step(source_seq, target_seq_in, target_seq_out, en_initial_states):
         for i in range(target_seq_out.shape[1]):
             # Input to the decoder must have shape of (batch_size, length)
             # so we need to expand one dimension
-# For each sample, the Luong-Attention decoder can only handle 1 word/decoder-input at one time.
+            # For each sample, we only handle 1 word/decoder-input at one time.
             temp2 = target_seq_in[:, i] # Get No i word from all S samples,
             decoder_in = tf.expand_dims(target_seq_in[:, i], 1) # S -> S x 1
             logit, de_state_h, de_state_c, _ = decoder(
@@ -320,8 +321,8 @@ for e in range(NUM_EPOCHS):
     # predict("How are you today ?")
 
     # the dataset includes 4 batches; take(-1) will get all the 4 batches
-    temp1 = dataset.take(-1)
-    temp2 = enumerate(temp1)
+    #temp1 = dataset.take(-1)
+    #temp2 = enumerate(temp1)
 
     # batch: 0,1,2,3
     # each batch contains 5 samples
